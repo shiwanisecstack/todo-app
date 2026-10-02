@@ -19,7 +19,11 @@ router.get("/", async (req, res) => {
 // Add todo owned by me
 router.post("/", async (req, res) => {
   try {
-    const todo = await Todo.create({ text: req.body.text, user: req.user._id });
+    const todo = await Todo.create({
+      title: req.body.title,
+      description: req.body.description,
+      user: req.user._id,
+    });
     res.status(201).json(todo);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -32,7 +36,8 @@ router.patch("/:id", async (req, res) => {
     const todo = await Todo.findOne({ _id: req.params.id, user: req.user._id });
     if (!todo) return res.status(404).json({ message: "Todo not found" });
 
-    if (req.body.text !== undefined) todo.text = req.body.text;
+    if (req.body.title !== undefined) todo.title = req.body.title;
+    if (req.body.description !== undefined) todo.description = req.body.description;
     if (req.body.completed !== undefined) todo.completed = req.body.completed;
 
     res.json(await todo.save());
