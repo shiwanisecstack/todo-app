@@ -27,7 +27,7 @@ const app = express();
 
 // Middleware
 app.use(cors({ 
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: process.env.CLIENT_URL || "https://todo-869fm2q6q-shiwanisecstacks-projects.vercel.app",
   credentials: true // Add this if you need to send cookies
 }));
 app.use(express.json());
