@@ -32,6 +32,14 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For form data
+app.use(async (req, res, next) => {
+  try {
+    await connectdb();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -55,22 +63,10 @@ app.use((error, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? error.message : undefined
   });
 });
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
-
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  connectdb();
-  console.log(`Server started on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+}
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('Shutting down gracefully...');
-  process.exit(0);
-});
+export default app;
