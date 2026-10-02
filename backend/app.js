@@ -26,9 +26,22 @@ import authRoutes from "./routes/auth.routes.js";
 const app = express();
 
 // Middleware
-app.use(cors({ 
-  origin: process.env.CLIENT_URL || "https://todo-869fm2q6q-shiwanisecstacks-projects.vercel.app",
-  credentials: true // Add this if you need to send cookies
+const allowedOrigins = [
+  "https://todo-app-ten-phi-49.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5000",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (Postman, curl) and any Vercel preview URL
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For form data
