@@ -45,6 +45,12 @@ const userSchema = new mongoose.Schema(
       type: Date, 
       select: false 
     },
+    // One-time code used for signup verification and password reset
+    otpHash: { type: String, select: false },
+    otpExpires: { type: Date, select: false },
+    otpPurpose: { type: String, enum: ["verify", "reset"], select: false },
+    otpAttempts: { type: Number, default: 0, select: false },
+    otpSentAt: { type: Date, select: false },
     // Add additional fields for better user management
     role: {
       type: String,
@@ -93,6 +99,41 @@ userSchema.methods.createResetToken = function () {
   this.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
   return rawToken;
 };
+// ---- OTP helpers ----
+const hashOtp = (otp) =>
+  crypto.createHmac("sha256", process.env.JWT_SECRET).update(String(otp)).digest("hex");
+
+// Returns the plain 6-digit code (email it) and stores only its hash.
+userSchema.methods.createOtp = function (purpose) {
+  const otp = String(crypto.randomInt(100000, 1000000));
+  this.otpHash = hashOtp(otp);
+  this.otpPurpose = purpose;
+  this.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  this.otpAttempts = 0;
+  this.otpSentAt = new Date();
+  return otp;
+};
+
+// Returns true if the code is right. Wrong guesses are counted (max 5).
+userSchema.methods.checkOtp = function (otp, purpose) {
+  if (!this.otpHash || this.otpPurpose !== purpose) return false;
+  if (!this.otpExpires || this.otpExpires.getTime() < Date.now()) return false;
+  if (this.otpAttempts >= 5) return false;
+  const a = Buffer.from(hashOtp(otp));
+  const b = Buffer.from(this.otpHash);
+  const ok = a.length === b.length && crypto.timingSafeEqual(a, b);
+  if (!ok) this.otpAttempts += 1;
+  return ok;
+};
+
+userSchema.methods.clearOtp = function () {
+  this.otpHash = undefined;
+  this.otpPurpose = undefined;
+  this.otpExpires = undefined;
+  this.otpSentAt = undefined;
+  this.otpAttempts = 0;
+};
+
 // Virtual for full name (if needed)
 userSchema.virtual("fullName").get(function () {
   return `${this.name}`;

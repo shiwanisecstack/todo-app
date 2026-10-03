@@ -17,8 +17,12 @@ export default function Signup() {
     setBusy(true)
     try {
       await signup(name, email, password)
-      navigate('/todos')
+      navigate('/verify-email', { state: { email } })
     } catch (err) {
+      if (err.data?.requiresVerification) {
+        navigate('/verify-email', { state: { email, notice: err.message } })
+        return
+      }
       setError(err.message)
     } finally {
       setBusy(false)
@@ -39,7 +43,7 @@ export default function Signup() {
             onChange={(e) => setName(e.target.value)} required />
           <input className={input} type="email" placeholder="Your Email" value={email}
             onChange={(e) => setEmail(e.target.value)} required />
-          <input className={input} type="password" placeholder="Your Password (min 6 chars)" value={password}
+          <input className={input} type="password" placeholder="Password (A-z, 0-9 and one of @$!%*?&)" value={password}
             onChange={(e) => setPassword(e.target.value)} minLength={6} required />
           <button
             type="submit"

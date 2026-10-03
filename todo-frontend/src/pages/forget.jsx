@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 
 export default function ForgotPassword() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [resetLink, setResetLink] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -13,12 +13,11 @@ export default function ForgotPassword() {
     e.preventDefault()
     setError('')
     setMessage('')
-    setResetLink('')
     setBusy(true)
     try {
       const data = await api('/auth/forgot-password', { method: 'POST', body: { email } })
       setMessage(data.message)
-      setResetLink(data.resetLink || '')
+      navigate('/reset-password', { state: { email, notice: data.message } })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -34,13 +33,6 @@ export default function ForgotPassword() {
         {error && <p className="text-red-600 text-sm text-center mb-3">{error}</p>}
         {message && <p className="text-green-600 text-sm text-center mb-3">{message}</p>}
 
-        {resetLink && (
-          <p className="text-sm text-center mb-3 break-all">
-            <span className="text-gray-500">Dev mode (no email server): </span>
-            <a href={resetLink} className="text-blue-600 hover:underline">Open reset link</a>
-          </p>
-        )}
-
         <form onSubmit={handleSubmit}>
           <input
             type="email"
@@ -55,7 +47,7 @@ export default function ForgotPassword() {
             disabled={busy}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded py-3"
           >
-            {busy ? 'Sending...' : 'Send reset link'}
+            {busy ? 'Sending...' : 'Send code'}
           </button>
         </form>
 

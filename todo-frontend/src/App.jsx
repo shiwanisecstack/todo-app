@@ -6,6 +6,7 @@ import Login from './pages/login.jsx'
 import Signup from './pages/signup.jsx'
 import ForgotPassword from './pages/forget.jsx'
 import ResetPassword from './pages/reset.jsx'
+import VerifyEmail from './pages/verify.jsx'
 import Todos from './pages/todo.jsx'
 
 function App() {
@@ -16,7 +17,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/todos"
         element={
@@ -30,4 +32,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

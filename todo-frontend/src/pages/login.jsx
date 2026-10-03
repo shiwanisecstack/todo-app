@@ -18,6 +18,10 @@ export default function Login() {
       await login(email, password)
       navigate('/todos')
     } catch (err) {
+      if (err.data?.needsVerification) {
+        navigate('/verify-email', { state: { email, notice: err.message } })
+        return
+      }
       setError(err.message)
     } finally {
       setBusy(false)

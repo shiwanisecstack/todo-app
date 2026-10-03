@@ -19,6 +19,7 @@ export async function api(path, { method = 'GET', body } = {}) {
     if (res.status === 401 && token) localStorage.removeItem('token')
     const err = new Error(data.message || 'Something went wrong')
     err.status = res.status
+    err.data = data
     throw err
   }
   return data
